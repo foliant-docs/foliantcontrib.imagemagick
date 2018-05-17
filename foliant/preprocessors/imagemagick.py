@@ -34,27 +34,56 @@ class Preprocessor(BasePreprocessor):
         self,
         img_path: str,
         img_caption: str,
-        magick_params: str,
-        processed_img_format: str or None
+        options: Dict[str, OptionValue]
     ) -> str:
 
         source_img_path = self._current_dir_path / img_path
+        processed_img_format = 'png'
+        command_params = []
+        command_params_string = ''
 
-        img_hash = md5(f'{magick_params}'.encode())
+        for option_name, option_value in options.items():
+            print(f'{option_name} {option_value} {isinstance(option_value, bool)}')
 
-        with open(source_img_path.absolute().as_posix(), 'rb') as source_img_file:
-            source_img_file_body = source_img_file.read()
-            img_hash.update(f'{source_img_file_body}'.encode())
+            if isinstance(option_value, bool):
+                if option_value:
+                    command_params.append(f'-{option_name}')
 
-        if not processed_img_format:
-            processed_img_format = 'png'
+            else:
+                option_value = str(option_value)
+                option_value = option_value.replace('&quot;', '"')
+                option_value = option_value.replace('&#34;', '"')
+
+                if option_name == 'output_format':
+                    processed_img_format = option_value
+
+                elif option_name == 'command_params':
+                    command_params_string += f'{option_value}'
+
+                else:
+                    if option_name == option_value:
+                        command_params.append(f'-{option_name}')
+
+                    else:
+                        command_params.append(f'-{option_name} {option_value}')
+
+        if command_params_string and command_params:
+            command_params_string += ' '
+
+        command_params_string += ' '.join(command_params)
 
         self.logger.debug(
             f'Source image path: {source_img_path}, ' \
             f'image caption: {img_caption}, ' \
-            f'ImageMagick params: {magick_params}, ' \
-            f'processed image format: {processed_img_format}'
+            f'processed image format: {processed_img_format}, ' \
+            f'command params: {command_params_string}'
         )
+
+        img_hash = md5(f'{command_params_string}'.encode())
+
+        with open(source_img_path.absolute().as_posix(), 'rb') as source_img_file:
+            source_img_file_body = source_img_file.read()
+            img_hash.update(f'{source_img_file_body}'.encode())
 
         processed_img_path = self._cache_dir_path / f'{img_hash.hexdigest()}.{processed_img_format}'
         processed_img_ref = f'![{img_caption}]({processed_img_path.absolute().as_posix()})'
@@ -71,7 +100,7 @@ class Preprocessor(BasePreprocessor):
         try:
             command = f'{self.options["convert_path"]} ' \
                       f'{source_img_path.absolute().as_posix()} ' \
-                      f'{magick_params} ' \
+                      f'{command_params_string} ' \
                       f'{processed_img_path.absolute().as_posix()}'
 
             run(command, shell=True, check=True, stdout=PIPE, stderr=STDOUT)
@@ -94,8 +123,7 @@ class Preprocessor(BasePreprocessor):
             return self._get_processed_img_ref(
                 src_img_ref.group('path'),
                 src_img_ref.group('caption'),
-                options.get('params'),
-                options.get('format')
+                options
             )
 
         return src_img_ref_pattern.sub(_sub, body)
