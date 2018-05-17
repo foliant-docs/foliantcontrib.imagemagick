@@ -43,8 +43,6 @@ class Preprocessor(BasePreprocessor):
         command_params_string = ''
 
         for option_name, option_value in options.items():
-            print(f'{option_name} {option_value} {isinstance(option_value, bool)}')
-
             if isinstance(option_value, bool):
                 if option_value:
                     command_params.append(f'-{option_name}')
