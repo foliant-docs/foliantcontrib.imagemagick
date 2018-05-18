@@ -1,5 +1,8 @@
 '''
-TODO
+Preprocessor for Foliant documentation authoring tool.
+
+Provides additional processing of images
+that referred in Markdown sources with ImageMagick.
 '''
 
 import re
