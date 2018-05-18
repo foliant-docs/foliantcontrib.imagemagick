@@ -23,7 +23,7 @@ The preprocessor has a number of options with the following default values:
 preprocessors:
     - imagemagick:
         convert_path: convert
-        cache_dir .imagemagickcache
+        cache_dir: .imagemagickcache
 ```
 
 `convert_path`
