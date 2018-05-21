@@ -46,7 +46,7 @@ To use the ImageMagick preprocessor to do the same, enclose one or more image re
 
 ```markdown
 <<magick command_params="-resize 600 -background Orange label:'Picture' +swap -gravity Center -append" output_format="jpg">
-![Optional Caption](image.eps)
+(leading exclamation mark here)[Optional Caption](image.eps)
 </magick>
 ```
 
@@ -58,6 +58,6 @@ Instead of using `command_params` attribute, you may specify each parameter as i
 
 ```markdown
 <<magick resize="600" background="Orange label:'Picture' +swap" gravity="Center" append="true" output_format="jpg">
-![Optional Caption](image.eps)
+(leading exclamation mark here)[Optional Caption](image.eps)
 </magick>
 ```
