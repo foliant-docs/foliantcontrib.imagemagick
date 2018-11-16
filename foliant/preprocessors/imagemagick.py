@@ -145,8 +145,11 @@ class Preprocessor(BasePreprocessor):
             with open(markdown_file_path, encoding='utf8') as markdown_file:
                 content = markdown_file.read()
 
-            with open(markdown_file_path, 'w', encoding='utf8') as markdown_file:
-                self._current_dir_path = markdown_file_path.parent
-                markdown_file.write(self.process_imagemagick(content))
+            processed_content = self.process_imagemagick(content)
+
+            if processed_content:
+                with open(markdown_file_path, 'w', encoding='utf8') as markdown_file:
+                    self._current_dir_path = markdown_file_path.parent
+                    markdown_file.write(processed_content)
 
         self.logger.info('Preprocessor applied')
