@@ -26,8 +26,8 @@ class Preprocessor(BasePreprocessor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._cache_dir_path = self.project_path / self.options['cache_dir']
-        self._current_dir_path = self.working_dir
+        self._cache_dir_path = (self.project_path / self.options['cache_dir']).resolve()
+        self._current_dir_path = self.working_dir.resolve()
 
         self.logger = self.logger.getChild('imagemagick')
 
@@ -40,7 +40,7 @@ class Preprocessor(BasePreprocessor):
         options: Dict[str, OptionValue]
     ) -> str:
 
-        source_img_path = self._current_dir_path / img_path
+        source_img_path = (self._current_dir_path / img_path).resolve()
         processed_img_format = 'png'
         command_params = []
         command_params_string = ''
@@ -74,20 +74,20 @@ class Preprocessor(BasePreprocessor):
         command_params_string += ' '.join(command_params)
 
         self.logger.debug(
-            f'Source image path: {source_img_path}, ' \
-            f'image caption: {img_caption}, ' \
-            f'processed image format: {processed_img_format}, ' \
+            f'Source image path: {source_img_path}, ' +
+            f'image caption: {img_caption}, ' +
+            f'processed image format: {processed_img_format}, ' +
             f'command params: {command_params_string}'
         )
 
         img_hash = md5(f'{command_params_string}'.encode())
 
-        with open(source_img_path.absolute().as_posix(), 'rb') as source_img_file:
+        with open(source_img_path, 'rb') as source_img_file:
             source_img_file_body = source_img_file.read()
             img_hash.update(f'{source_img_file_body}'.encode())
 
-        processed_img_path = self._cache_dir_path / f'{img_hash.hexdigest()}.{processed_img_format}'
-        processed_img_ref = f'![{img_caption}]({processed_img_path.absolute().as_posix()})'
+        processed_img_path = (self._cache_dir_path / f'{img_hash.hexdigest()}.{processed_img_format}').resolve()
+        processed_img_ref = f'![{img_caption}]({processed_img_path})'
 
         self.logger.debug(f'Processed image path: {processed_img_path}')
 
@@ -99,10 +99,14 @@ class Preprocessor(BasePreprocessor):
         processed_img_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            command = f'{self.options["convert_path"]} ' \
-                      f'{source_img_path.absolute().as_posix()} ' \
-                      f'{command_params_string} ' \
-                      f'{processed_img_path.absolute().as_posix()}'
+            command = (
+                f'{self.options["convert_path"]} ' +
+                f'"{source_img_path}" ' +
+                f'{command_params_string} ' +
+                f'"{processed_img_path}"'
+            )
+
+            self.logger.debug(f'Running the command: {command}')
 
             run(command, shell=True, check=True, stdout=PIPE, stderr=STDOUT)
 
@@ -142,6 +146,8 @@ class Preprocessor(BasePreprocessor):
         self.logger.info('Applying preprocessor')
 
         for markdown_file_path in self.working_dir.rglob('*.md'):
+            self._current_dir_path = markdown_file_path.parent.resolve()
+
             with open(markdown_file_path, encoding='utf8') as markdown_file:
                 content = markdown_file.read()
 
@@ -149,7 +155,6 @@ class Preprocessor(BasePreprocessor):
 
             if processed_content:
                 with open(markdown_file_path, 'w', encoding='utf8') as markdown_file:
-                    self._current_dir_path = markdown_file_path.parent
                     markdown_file.write(processed_content)
 
         self.logger.info('Preprocessor applied')
