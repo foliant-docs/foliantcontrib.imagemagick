@@ -1,3 +1,5 @@
+[![](https://img.shields.io/pypi/v/foliantcontrib.imagemagick.svg)](https://pypi.org/project/foliantcontrib.imagemagick/) [![](https://img.shields.io/github/v/tag/foliant-docs/foliantcontrib.imagemagick.svg?label=GitHub)](https://github.com/foliant-docs/foliantcontrib.imagemagick)
+
 # ImageMagick Preprocessor
 
 This tool provides additional processing of images that referred in Markdown source, with [ImageMagick](https://imagemagick.org/).
@@ -42,10 +44,10 @@ $ convert image.eps -resize 600 -background Orange label:'Picture' +swap -gravit
 
 This command takes the source EPS image `image.eps`, resizes it, puts a text label over the picture, and writes the result into new file `image.jpg`. The suffix of output file name specifies that the image must be converted into JPEG format.
 
-To use the ImageMagick preprocessor to do the same, enclose one or more image references in your Markdown source between `<<magick>` and `</magick>` tags.
+To use the ImageMagick preprocessor to do the same, enclose one or more image references in your Markdown source between `<magick>` and `</magick>` tags.
 
 ```markdown
-<<magick command_params="-resize 600 -background Orange label:'Picture' +swap -gravity Center -append" output_format="jpg">
+<magick command_params="-resize 600 -background Orange label:'Picture' +swap -gravity Center -append" output_format="jpg">
 (leading exclamation mark here)[Optional Caption](image.eps)
 </magick>
 ```
@@ -57,7 +59,7 @@ Use `command_params` attribute to specify the string of parameters that should b
 Instead of using `command_params` attribute, you may specify each parameter as its own attribute with the same name:
 
 ```markdown
-<<magick resize="600" background="Orange label:'Picture' +swap" gravity="Center" append="true" output_format="jpg">
+<magick resize="600" background="Orange label:'Picture' +swap" gravity="Center" append="true" output_format="jpg">
 (leading exclamation mark here)[Optional Caption](image.eps)
 </magick>
 ```
